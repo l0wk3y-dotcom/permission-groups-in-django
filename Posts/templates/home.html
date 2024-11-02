@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Home Page{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    
+    <div class="row">
+        {% for post in posts %}
+        <div class="col-md-12 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <strong>@{{ post.author.username }}</strong>
+                    
+                    {% if user.is_staff %}
+                        {% if post.author.is_banned %}
+                            <!-- Unban Button -->
+                            <form method="post" action="3">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-success">Unban User</button>
+                            </form>
+                        {% else %}
+                            <!-- Ban Button -->
+                            <form method="post" action="{% url 'ban-user' post.author.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-warning">Ban User</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <!-- Left Side: Author, Title, Content -->
+                    <div>
+                        <h6 class="card-subtitle mb-2 text-muted">{{ post.title }}</h6>
+                        <p class="card-text">{{ post.content }}</p>
+                    </div>
+                    
+                    <!-- Right Side: Delete Button -->
+                    {% if post.author == user or perms.Posts.delete_post %}
+                        <form method="post" action="{% url 'delete_post' post.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    {% endif %}
+                </div>
+                <div class="card-footer text-muted">
+                    Posted on {{ post.created_at|date:"F j, Y, g:i a" }}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p>No posts available.</p>
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}
